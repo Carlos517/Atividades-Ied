@@ -1,88 +1,58 @@
-import json
+tarefas = []            # Lista principal de tarefas
+historico = []          # Pilha para desfazer tarefas
+fila_execucao = []      # Fila para executar tarefas
 
-tarefas = []
-historico = []
-fila_execucao = []
-NOME_ARQUIVO = "tarefas.txt"
+def adicionar_tarefa(tarefa): # adicionar_tarefa é a função responsável por adicionas as tarefas.
+    prioridade = input("Digite a prioridade (alta, média, baixa) ou deixe em branco: ").strip().lower() # solicita a prioridade da tarefa ao usuário
+    tarefa_com_prioridade = f"{tarefa} [prioridade: {prioridade}]" if prioridade else tarefa # adiciona a prioridade ao texto da tarefa, se fornecida
+    tarefas.append(tarefa_com_prioridade)    # o método append é chamado na lista "tarefas" para adiocionar uma tarefa.
+    historico.append(tarefa_com_prioridade)  # o método append é chamado na lista "historico" para adiocionar uma tarefa.
+    fila_execucao.append(tarefa_com_prioridade) # o método append é chamado na lista "fila_execucao" para adiocionar uma tarefa.
+    print(f"Tarefa '{tarefa_com_prioridade}' adicionada!\n") # Ao adicionar a tarefa na lista o print mostra a tarefa adicionado.
 
-def adicionar_tarefa(tarefa):
-    prioridade = input("Digite a prioridade (alta, média, baixa) ou deixe em branco: ").strip().lower()
-    nova_tarefa = {"descricao": tarefa, "prioridade": prioridade}
-    tarefas.append(nova_tarefa)
-    historico.append(nova_tarefa)
-    fila_execucao.append(nova_tarefa)
-    salvar_tarefas()
-    print(f"Tarefa '{tarefa}' adicionada!\n")
+def desfazer_ultima_tarefa():  # A função desfazer_ultima_tarefa é usada para desfazer a última tarefa.
+    if historico:  # a estrutura condicional verifica se a pilha tem alguma tarefa e executa o bloco de comando a seguir se uma condição for atendida.
+        ultima = historico.pop() # o método pega o ultimo item da lista "historico" e atribui a variável "ultima".
+        tarefas.remove(ultima)  #  o método remove está removendo o item ultima da lista "tarefas"
+        fila_execucao.remove(ultima)  #  o método remove está removendo o item ultima da lista "fila_execucao"
+        print(f"Tarefa '{ultima}' desfeita!\n")  #  o comando print mostra a ultima tarefa desfeita.
+    else: # estrutura condicional que diz que se nenhuma das condições anteriores for verdadeira, então execute esta parte do código a seguir.
+        print("Nenhuma tarefa para desfazer.\n") # o comando print mostra que não tem tarefas adicionadas, logo não tem para remover.
 
-def desfazer_ultima_tarefa():
-    if historico:
-        ultima = historico.pop()
-        tarefas.remove(ultima)
-        fila_execucao.remove(ultima)
-        salvar_tarefas()
-        print(f"Tarefa '{ultima['descricao']}' desfeita!\n")
-    else:
-        print("Nenhuma tarefa para desfazer.\n")
+def atender_tarefa(): # a função "atender_tarefa" serve para mudar a tarefa para atendida.
+    if fila_execucao: # estrutura condicional que verifica a existência de tarefas na fila e executa o bloco de comando a seguir se uma condição for atendida.
+        feita = fila_execucao.pop(0) # o método pop obtem o item da posição para atribuir na variável "feita".
+        tarefas.remove(feita) # o método remove, remove a variavel atribuida em "feita"
+        print(f"Tarefa '{feita}' atendida!\n") # o print mostra que a tarefa foi atendida.
+    else: # estrutura condicional que diz que se nenhuma das condições anteriores for verdadeira, então execute esta parte do código a seguir.
+        print("Nenhuma tarefa para atender.\n") # O print mostra que não tem tarefas a serem concluidas.
 
-def atender_tarefa():
-    if fila_execucao:
-        feita = fila_execucao.pop(0)
-        tarefas.remove(feita)
-        salvar_tarefas()
-        print(f"Tarefa '{feita['descricao']}' atendida!\n")
-    else:
-        print("Nenhuma tarefa para atender.\n")
+def mostrar_tarefas():# a função mostrar_tarefas serve para mostrar todas as tarefas
+    print("\n📋 Lista de Tarefas:") # O print apenas mostra a mensagem 📋 Lista de Tarefas:.
+    for i, t in enumerate(tarefas): # estrutura condicional que percorre as tarefas com índice e valor.
+        print(f"{i + 1}. {t}") # o print mostra cada tarefa a partir da numeração "1".
+    print()  # o print mostra uma linha em branco para espaçamento.
 
-def mostrar_tarefas():
-    print("\n📋 Lista de Tarefas:")
-    if tarefas:
-        for i, t in enumerate(tarefas):
-            info = f"{i + 1}. {t['descricao']}"
-            if t.get('prioridade'):
-                info += f" (Prioridade: {t['prioridade']})"
-            print(info)
-    else:
-        print("Nenhuma tarefa na lista.")
-    print()
+while True: # estrutura de repetição principal do menu interativo.
+    print("1. Adicionar Tarefa")  # o print exibe a opção "Adicionar Tarefa" no menu interativo.
+    print("2. Desfazer Última Tarefa") # o print exibe a opção "Desfazer Última Tarefa" no menu interativo. 
+    print("3. Atender Tarefa (modo fila)") # o print exibe a opção "Atender Tarefa" no menu interativo.
+    print("4. Mostrar Tarefas") # o print exibe a opção "Mostrar Tarefas" no menu interativo.
+    print("5. Sair") # o print exibe a opção "Sair" no menu interativo.
 
-def salvar_tarefas():
-    with open(NOME_ARQUIVO, 'w') as arquivo:
-        json.dump(tarefas, arquivo)
-    print(f"Tarefas salvas em '{NOME_ARQUIVO}'.")
+    opcao = input("Escolha uma opção: ") # lê a opção que o usuário escolher.
 
-def carregar_tarefas():
-    try:
-        with open(NOME_ARQUIVO, 'r') as arquivo:
-            global tarefas, historico, fila_execucao
-            tarefas = json.load(arquivo)
-            historico = list(tarefas)
-            fila_execucao = list(tarefas)
-        print(f"Tarefas carregadas de '{NOME_ARQUIVO}'.")
-    except FileNotFoundError:
-        print(f"Arquivo '{NOME_ARQUIVO}' não encontrado. Iniciando com uma lista de tarefas vazia.")
-
-carregar_tarefas()
-
-while True:
-    print("1. Adicionar Tarefa")
-    print("2. Desfazer Última Tarefa")
-    print("3. Atender Tarefa (modo fila)")
-    print("4. Mostrar Tarefas")
-    print("5. Sair")
-
-    opcao = input("Escolha uma opção: ")
-
-    if opcao == '1':
-        tarefa = input("Digite a tarefa: ")
-        adicionar_tarefa(tarefa)
-    elif opcao == '2':
-        desfazer_ultima_tarefa()
-    elif opcao == '3':
-        atender_tarefa()
-    elif opcao == '4':
-        mostrar_tarefas()
-    elif opcao == '5':
-        print("Saindo do programa...")
-        break
-    else:
-        print("Opção inválida!\n")
+    if opcao == '1': # estrutura de condição que diz que se a opção for 1 execute o bloco abaixo.
+        tarefa = input("Digite a tarefa: ") # lê a descrição da tarefa que o usuário digita.
+        adicionar_tarefa(tarefa) # chama a variável " adicionar_tarefa" para adicionar uma tarefa.
+    elif opcao == '2': # estrutura de condição que diz que se a opção for 2 execute o bloco abaixo.
+        desfazer_ultima_tarefa() #  variável chamada para desfazer a ultima tarefa
+    elif opcao == '3': # estrutura de condição que diz que se a opção for 3 execute o bloco abaixo.
+        atender_tarefa() # variável chamada para atender a ultima tarefa
+    elif opcao == '4': # estrutura de condição que diz que se a opção for 4 execute o bloco abaixo.
+        mostrar_tarefas() # variável chamada para mostrar as tarefas.
+    elif opcao == '5': # estrutura de condição que diz que se a opção for 5 execute o bloco abaixo.
+        print("Saindo do programa...") # sair do programa
+        break # encerra o loop e termina o programa
+    else: # Se o usuário digitar uma opção inválida execute o bloco abaixo.
+        print("Opção inválida!\n") # mostra que a opção digitada pelo usuário é inválida.
